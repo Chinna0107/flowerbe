@@ -70,6 +70,19 @@ router.put('/:id', authAdmin, async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// PUT /api/products/:id/toggle-coupon — admin toggle coupon eligibility
+router.put('/:id/toggle-coupon', authAdmin, async (req, res) => {
+  const { eligible_for_coupon } = req.body;
+  try {
+    const r = await pool.query(
+      'UPDATE products SET eligible_for_coupon=$1 WHERE id=$2 RETURNING *',
+      [eligible_for_coupon, req.params.id]
+    );
+    if (!r.rows.length) return res.status(404).json({ error: 'Product not found' });
+    res.json(r.rows[0]);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 // DELETE /api/products/:id — admin
 router.delete('/:id', authAdmin, async (req, res) => {
   try {

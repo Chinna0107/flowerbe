@@ -5,18 +5,23 @@ const { authCustomer, authAdmin } = require('../middleware/auth');
 // GET /api/orders/my — customer
 router.get('/my', authCustomer, async (req, res) => {
   try {
-    const r = await pool.query('SELECT * FROM orders WHERE customer_id=$1 ORDER BY created_at DESC', [req.customer.id]);
+    const paymentFilter = "((payment_method = 'cod') OR (payment_method = 'razorpay' AND status IN ('Confirmed', 'In Transit', 'Delivered')))";
+    const r = await pool.query(
+      `SELECT * FROM orders WHERE customer_id=$1 AND ${paymentFilter} ORDER BY created_at DESC`,
+      [req.customer.id]
+    );
     res.json(r.rows);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// GET /api/orders — admin all with details
+// GET /api/orders — admin all with details (only paid/cod orders)
 router.get('/', authAdmin, async (req, res) => {
   try {
     const { status } = req.query;
+    const paymentFilter = "((o.payment_method = 'cod') OR (o.payment_method = 'razorpay' AND o.status IN ('Confirmed', 'In Transit', 'Delivered')))";
     const q = status && status !== 'All'
-      ? 'SELECT o.*, c.name as customer_name, c.email as customer_email FROM orders o LEFT JOIN customers c ON o.customer_id=c.id WHERE o.status=$1 ORDER BY o.created_at DESC'
-      : 'SELECT o.*, c.name as customer_name, c.email as customer_email FROM orders o LEFT JOIN customers c ON o.customer_id=c.id ORDER BY o.created_at DESC';
+      ? `SELECT o.*, c.name as customer_name, c.email as customer_email FROM orders o LEFT JOIN customers c ON o.customer_id=c.id WHERE o.status=$1 AND ${paymentFilter} ORDER BY o.created_at DESC`
+      : `SELECT o.*, c.name as customer_name, c.email as customer_email FROM orders o LEFT JOIN customers c ON o.customer_id=c.id WHERE ${paymentFilter} ORDER BY o.created_at DESC`;
     const r = await pool.query(q, status && status !== 'All' ? [status] : []);
     res.json(r.rows);
   } catch (err) { res.status(500).json({ error: err.message }); }

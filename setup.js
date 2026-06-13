@@ -34,6 +34,7 @@ async function setup() {
       tag VARCHAR(50),
       img TEXT,
       description TEXT,
+      eligible_for_coupon BOOLEAN DEFAULT FALSE,
       created_at TIMESTAMP DEFAULT NOW()
     );
 
@@ -68,6 +69,8 @@ async function setup() {
       end_date DATE,
       price_per_day NUMERIC(10,2),
       n_days INT,
+      paused_at DATE DEFAULT NULL,
+      address TEXT,
       created_at TIMESTAMP DEFAULT NOW()
     );
 
@@ -79,6 +82,17 @@ async function setup() {
       subject VARCHAR(200),
       message TEXT,
       status VARCHAR(20) DEFAULT 'open',
+      created_at TIMESTAMP DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS coupons (
+      id SERIAL PRIMARY KEY,
+      code VARCHAR(50) UNIQUE NOT NULL,
+      discount_type VARCHAR(20) DEFAULT 'percentage',
+      discount_value NUMERIC(10,2) NOT NULL,
+      max_discount NUMERIC(10,2),
+      min_order_value NUMERIC(10,2) DEFAULT 0,
+      active BOOLEAN DEFAULT TRUE,
       created_at TIMESTAMP DEFAULT NOW()
     );
   `);

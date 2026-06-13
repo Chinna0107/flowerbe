@@ -54,11 +54,11 @@ router.post('/', authCustomer, async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// GET /api/subscriptions/my — customer (only active)
+// GET /api/subscriptions/my — customer (all statuses)
 router.get('/my', authCustomer, async (req, res) => {
   try {
     const r = await pool.query(
-      "SELECT * FROM subscriptions WHERE customer_id=$1 AND status='Active' ORDER BY created_at DESC",
+      "SELECT * FROM subscriptions WHERE customer_id=$1 ORDER BY created_at DESC",
       [req.customer.id]
     );
     res.json(r.rows);
@@ -76,10 +76,95 @@ router.put('/:id/cancel', authCustomer, async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// GET /api/subscriptions — admin (only active)
+// PUT /api/subscriptions/:id/pause — customer pause
+router.put('/:id/pause', authCustomer, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const subRes = await pool.query(
+      "SELECT * FROM subscriptions WHERE id=$1 AND customer_id=$2",
+      [id, req.customer.id]
+    );
+    if (subRes.rows.length === 0) {
+      return res.status(404).json({ error: 'Subscription not found' });
+    }
+    const sub = subRes.rows[0];
+    if (sub.status !== 'Active') {
+      return res.status(400).json({ error: 'Only active subscriptions can be paused' });
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+    const r = await pool.query(
+      "UPDATE subscriptions SET status='Paused', paused_at=$1 WHERE id=$2 RETURNING *",
+      [today, id]
+    );
+    res.json(r.rows[0]);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// PUT /api/subscriptions/:id/resume — customer resume
+router.put('/:id/resume', authCustomer, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const subRes = await pool.query(
+      "SELECT * FROM subscriptions WHERE id=$1 AND customer_id=$2",
+      [id, req.customer.id]
+    );
+    if (subRes.rows.length === 0) {
+      return res.status(404).json({ error: 'Subscription not found' });
+    }
+    const sub = subRes.rows[0];
+    if (sub.status !== 'Paused') {
+      return res.status(400).json({ error: 'Only paused subscriptions can be resumed' });
+    }
+
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const pausedAtStr = new Date(sub.paused_at).toISOString().split('T')[0];
+
+    const d1 = new Date(todayStr);
+    const d2 = new Date(pausedAtStr);
+    const diffTime = d1 - d2;
+    const pauseDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    let newEndDate = new Date(sub.end_date);
+    let newNextDelivery = new Date(sub.next_delivery);
+
+    const actualPauseDays = pauseDays > 0 ? pauseDays : 0;
+
+    if (actualPauseDays > 0) {
+      newEndDate.setDate(newEndDate.getDate() + actualPauseDays);
+      newNextDelivery.setDate(newNextDelivery.getDate() + actualPauseDays);
+    } else {
+      // If paused and resumed on the same day, next delivery might need to be reset to today/tomorrow if it was missed,
+      // but if next_delivery is already in the future, we keep it as is.
+      const nextDeliveryStr = newNextDelivery.toISOString().split('T')[0];
+      if (nextDeliveryStr < todayStr) {
+        newNextDelivery = new Date();
+        newNextDelivery.setDate(newNextDelivery.getDate() + 1);
+      }
+    }
+
+    const r = await pool.query(
+      `UPDATE subscriptions 
+       SET status='Active', 
+           end_date=$1, 
+           next_delivery=$2, 
+           paused_at=NULL 
+       WHERE id=$3 RETURNING *`,
+      [
+        newEndDate.toISOString().split('T')[0], 
+        newNextDelivery.toISOString().split('T')[0], 
+        id
+      ]
+    );
+    res.json(r.rows[0]);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// GET /api/subscriptions — admin (all statuses)
 router.get('/', authAdmin, async (req, res) => {
   try {
-    const r = await pool.query("SELECT * FROM subscriptions WHERE status='Active' ORDER BY created_at DESC");
+    const r = await pool.query("SELECT * FROM subscriptions ORDER BY created_at DESC");
     res.json(r.rows);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });

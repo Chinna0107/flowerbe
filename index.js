@@ -36,6 +36,7 @@ app.use('/api/payment',       require('./routes/payment'));
 app.use('/api/orders',        require('./routes/orders'));
 app.use('/api/subscriptions', require('./routes/subscriptions'));
 app.use('/api/support',       require('./routes/support'));
+app.use('/api/coupons',       require('./routes/coupons'));
 
 // Admin routes
 app.use('/api/reports',       require('./routes/reports'));
