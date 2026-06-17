@@ -48,11 +48,11 @@ router.post('/upload-image', authAdmin, upload.single('image'), async (req, res)
 
 // POST /api/products — admin
 router.post('/', authAdmin, async (req, res) => {
-  const { name, category, price_per_unit, our_price, mrp, tag, img, description } = req.body;
+  const { name, category, price_per_unit, our_price, mrp, tag, img, description, quantity } = req.body;
   try {
     const r = await pool.query(
-      'INSERT INTO products (name,category,price_per_unit,our_price,mrp,tag,img,description) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *',
-      [name, category, price_per_unit, our_price, mrp, tag, img, description]
+      'INSERT INTO products (name,category,price_per_unit,our_price,mrp,tag,img,description,quantity) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *',
+      [name, category, price_per_unit, our_price, mrp, tag, img, description, quantity]
     );
     res.status(201).json(r.rows[0]);
   } catch (err) { res.status(500).json({ error: err.message }); }
@@ -60,11 +60,11 @@ router.post('/', authAdmin, async (req, res) => {
 
 // PUT /api/products/:id — admin
 router.put('/:id', authAdmin, async (req, res) => {
-  const { name, category, price_per_unit, our_price, mrp, tag, img, description } = req.body;
+  const { name, category, price_per_unit, our_price, mrp, tag, img, description, quantity } = req.body;
   try {
     const r = await pool.query(
-      'UPDATE products SET name=$1,category=$2,price_per_unit=$3,our_price=$4,mrp=$5,tag=$6,img=$7,description=$8 WHERE id=$9 RETURNING *',
-      [name, category, price_per_unit, our_price, mrp, tag, img, description, req.params.id]
+      'UPDATE products SET name=$1,category=$2,price_per_unit=$3,our_price=$4,mrp=$5,tag=$6,img=$7,description=$8,quantity=$9 WHERE id=$10 RETURNING *',
+      [name, category, price_per_unit, our_price, mrp, tag, img, description, quantity, req.params.id]
     );
     res.json(r.rows[0]);
   } catch (err) { res.status(500).json({ error: err.message }); }

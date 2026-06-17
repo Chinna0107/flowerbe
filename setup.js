@@ -34,6 +34,7 @@ async function setup() {
       tag VARCHAR(50),
       img TEXT,
       description TEXT,
+      quantity VARCHAR(100),
       eligible_for_coupon BOOLEAN DEFAULT FALSE,
       created_at TIMESTAMP DEFAULT NOW()
     );
@@ -106,25 +107,25 @@ async function setup() {
 
   // Seed products
   const products = [
-    ['Premium Pooja Mix',     'pooja-premium', 20, 599, 749,  'Premium',    'https://images.unsplash.com/photo-1585559604959-0f9e3413e8e8?w=600&h=600&fit=crop&q=85',  'Curated premium blooms for daily pooja — roses, marigold & jasmine.'],
-    ['Basic Pooja Pack',      'pooja-basic',   4,  129, 169,  'Value',      'https://images.unsplash.com/photo-1508193638397-1c4234db14d8?w=600&h=600&fit=crop&q=85',  'Everyday pooja flowers — fresh marigold, chrysanthemum & tulsi.'],
-    ['Rose Bouquet',          'fresh',         40, 499, 599,  'Best Seller','https://images.unsplash.com/photo-1561128290-006b5bdf10a7?w=600&h=600&fit=crop&q=85',  'Dozen velvety red roses, hand-tied with satin ribbon.'],
-    ['Sunflower Bunch',       'fresh',         30, 349, 449,  'Cheerful',   'https://images.unsplash.com/photo-1597848212624-a19eb35e2651?w=600&h=600&fit=crop&q=85',  'Bright, farm-fresh sunflowers that light up any room.'],
-    ['Lily Arrangement',      'fresh',         50, 599, 749,  'Elegant',    'https://images.unsplash.com/photo-1490750967868-88df5691cc85?w=600&h=600&fit=crop&q=85',  'White Asiatic lilies in a premium glass vase.'],
-    ['Marigold Bunch',        'fresh',         5,  149, 199,  'Fresh',      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=600&fit=crop&q=85',  'Vibrant orange & yellow marigolds, perfect for any occasion.'],
-    ['Bridal Poola Jada Set', 'poola-jada',    null,1299,1599, 'Bridal',     'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=600&h=600&fit=crop&q=85',  'Traditional South Indian bridal hair floral set.'],
-    ['Mini Poola Jada',       'poola-jada',    null,699, 899,  'Popular',    'https://images.unsplash.com/photo-1519378058457-4c29a0a2efac?w=600&h=600&fit=crop&q=85',  'Compact floral hair trail for receptions & functions.'],
-    ['Jasmine Hair Pin Set',  'hair',          null,199, 249,  'Trending',   'https://images.unsplash.com/photo-1487530811015-780073b1225b?w=600&h=600&fit=crop&q=85',  'Fresh jasmine pins — perfect for daily wear or festive styling.'],
-    ['Rose Hair Clip',        'hair',          null,149, 199,  'New',        'https://images.unsplash.com/photo-1504208434309-cb69f4fe52b0?w=600&h=600&fit=crop&q=85',  'Single bloom rose clip, hand-made fresh each morning.'],
-    ['Jasmine Garland',       'garlands',      10, 299, 399,  'Fragrant',   'https://images.unsplash.com/photo-1508610048659-a06b669e3321?w=600&h=600&fit=crop&q=85',  'Pure jasmine garland, 3 ft — freshly strung every morning.'],
-    ['Marigold Garland',      'garlands',      7,  199, 249,  'Pooja',      'https://images.unsplash.com/photo-1561181286-d5c73431a97b?w=600&h=600&fit=crop&q=85',  'Traditional marigold mala for home & temple pooja.'],
-    ['Flower Jewellery Set',  'jewellery',     null,999, 1299, 'Exclusive',  'https://images.unsplash.com/photo-1606166325683-e6deb697d301?w=600&h=600&fit=crop&q=85',  'Full set — necklace, bangles & maang tikka in fresh flowers.'],
-    ['Floral Necklace',       'jewellery',     null,449, 599,  'Bridal',     'https://images.unsplash.com/photo-1596436902073-02b8fecf5a1d?w=600&h=600&fit=crop&q=85',  'Handcrafted fresh-flower necklace for ceremonies & functions.'],
+    ['Premium Pooja Mix',     'pooja-premium', 20, 599, 749,  'Premium',    'https://images.unsplash.com/photo-1585559604959-0f9e3413e8e8?w=600&h=600&fit=crop&q=85',  'Curated premium blooms for daily pooja — roses, marigold & jasmine.', '500g'],
+    ['Basic Pooja Pack',      'pooja-basic',   4,  129, 169,  'Value',      'https://images.unsplash.com/photo-1508193638397-1c4234db14d8?w=600&h=600&fit=crop&q=85',  'Everyday pooja flowers — fresh marigold, chrysanthemum & tulsi.', '250g'],
+    ['Rose Bouquet',          'fresh',         40, 499, 599,  'Best Seller','https://images.unsplash.com/photo-1561128290-006b5bdf10a7?w=600&h=600&fit=crop&q=85',  'Dozen velvety red roses, hand-tied with satin ribbon.', '12 Stems'],
+    ['Sunflower Bunch',       'fresh',         30, 349, 449,  'Cheerful',   'https://images.unsplash.com/photo-1597848212624-a19eb35e2651?w=600&h=600&fit=crop&q=85',  'Bright, farm-fresh sunflowers that light up any room.', '5 Stems'],
+    ['Lily Arrangement',      'fresh',         50, 599, 749,  'Elegant',    'https://images.unsplash.com/photo-1490750967868-88df5691cc85?w=600&h=600&fit=crop&q=85',  'White Asiatic lilies in a premium glass vase.', '6 Stems'],
+    ['Marigold Bunch',        'fresh',         5,  149, 199,  'Fresh',      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=600&fit=crop&q=85',  'Vibrant orange & yellow marigolds, perfect for any occasion.', '500g'],
+    ['Bridal Poola Jada Set', 'poola-jada',    null,1299,1599, 'Bridal',     'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=600&h=600&fit=crop&q=85',  'Traditional South Indian bridal hair floral set.', '1 Set'],
+    ['Mini Poola Jada',       'poola-jada',    null,699, 899,  'Popular',    'https://images.unsplash.com/photo-1519378058457-4c29a0a2efac?w=600&h=600&fit=crop&q=85',  'Compact floral hair trail for receptions & functions.', '1 Set'],
+    ['Jasmine Hair Pin Set',  'hair',          null,199, 249,  'Trending',   'https://images.unsplash.com/photo-1487530811015-780073b1225b?w=600&h=600&fit=crop&q=85',  'Fresh jasmine pins — perfect for daily wear or festive styling.', '6 Pcs'],
+    ['Rose Hair Clip',        'hair',          null,149, 199,  'New',        'https://images.unsplash.com/photo-1504208434309-cb69f4fe52b0?w=600&h=600&fit=crop&q=85',  'Single bloom rose clip, hand-made fresh each morning.', '1 Pc'],
+    ['Jasmine Garland',       'garlands',      10, 299, 399,  'Fragrant',   'https://images.unsplash.com/photo-1508610048659-a06b669e3321?w=600&h=600&fit=crop&q=85',  'Pure jasmine garland, 3 ft — freshly strung every morning.', '3 Ft'],
+    ['Marigold Garland',      'garlands',      7,  199, 249,  'Pooja',      'https://images.unsplash.com/photo-1561181286-d5c73431a97b?w=600&h=600&fit=crop&q=85',  'Traditional marigold mala for home & temple pooja.', '1 Pc (3 Ft)'],
+    ['Flower Jewellery Set',  'jewellery',     null,999, 1299, 'Exclusive',  'https://images.unsplash.com/photo-1606166325683-e6deb697d301?w=600&h=600&fit=crop&q=85',  'Full set — necklace, bangles & maang tikka in fresh flowers.', '1 Set'],
+    ['Floral Necklace',       'jewellery',     null,449, 599,  'Bridal',     'https://images.unsplash.com/photo-1596436902073-02b8fecf5a1d?w=600&h=600&fit=crop&q=85',  'Handcrafted fresh-flower necklace for ceremonies & functions.', '1 Pc'],
   ];
 
   for (const p of products) {
     await pool.query(
-      'INSERT INTO products (name,category,price_per_unit,our_price,mrp,tag,img,description) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT DO NOTHING',
+      'INSERT INTO products (name,category,price_per_unit,our_price,mrp,tag,img,description,quantity) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT DO NOTHING',
       p
     );
   }
