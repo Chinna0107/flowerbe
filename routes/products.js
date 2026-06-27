@@ -48,11 +48,11 @@ router.post('/upload-image', authAdmin, upload.single('image'), async (req, res)
 
 // POST /api/products — admin
 router.post('/', authAdmin, async (req, res) => {
-  const { name, category, price_per_unit, our_price, mrp, tag, img, description, quantity } = req.body;
+  const { name, category, price_per_unit, our_price, mrp, tag, img, description, quantity, price_variants } = req.body;
   try {
     const r = await pool.query(
-      'INSERT INTO products (name,category,price_per_unit,our_price,mrp,tag,img,description,quantity) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *',
-      [name, category, price_per_unit, our_price, mrp, tag, img, description, quantity]
+      'INSERT INTO products (name,category,price_per_unit,our_price,mrp,tag,img,description,quantity,price_variants) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *',
+      [name, category, price_per_unit, our_price, mrp, tag, img, description, quantity, price_variants || '[]']
     );
     res.status(201).json(r.rows[0]);
   } catch (err) { res.status(500).json({ error: err.message }); }
@@ -60,11 +60,11 @@ router.post('/', authAdmin, async (req, res) => {
 
 // PUT /api/products/:id — admin
 router.put('/:id', authAdmin, async (req, res) => {
-  const { name, category, price_per_unit, our_price, mrp, tag, img, description, quantity } = req.body;
+  const { name, category, price_per_unit, our_price, mrp, tag, img, description, quantity, price_variants } = req.body;
   try {
     const r = await pool.query(
-      'UPDATE products SET name=$1,category=$2,price_per_unit=$3,our_price=$4,mrp=$5,tag=$6,img=$7,description=$8,quantity=$9 WHERE id=$10 RETURNING *',
-      [name, category, price_per_unit, our_price, mrp, tag, img, description, quantity, req.params.id]
+      'UPDATE products SET name=$1,category=$2,price_per_unit=$3,our_price=$4,mrp=$5,tag=$6,img=$7,description=$8,quantity=$9,price_variants=$10 WHERE id=$11 RETURNING *',
+      [name, category, price_per_unit, our_price, mrp, tag, img, description, quantity, price_variants || '[]', req.params.id]
     );
     res.json(r.rows[0]);
   } catch (err) { res.status(500).json({ error: err.message }); }

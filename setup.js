@@ -35,6 +35,7 @@ async function setup() {
       img TEXT,
       description TEXT,
       quantity VARCHAR(100),
+      price_variants JSONB DEFAULT '[]'::jsonb,
       eligible_for_coupon BOOLEAN DEFAULT FALSE,
       created_at TIMESTAMP DEFAULT NOW()
     );
